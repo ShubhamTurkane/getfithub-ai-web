@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Body Type Selector – Find Your Plan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --green: #22c55e;
+      --green-glow: rgba(34,197,94,0.35);
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --surface2: #1c1c28;
+      --border: #2a2a3a;
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+    }
+    * { box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── Background grid ─── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(34,197,94,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(34,197,94,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none; z-index: 0;
+    }
+
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 0.05em;
+      line-height: 1;
+    }
+
+    /* ─── Section tabs ─── */
+    .gender-tab {
+      cursor: pointer;
+      transition: all 0.25s ease;
+      border-bottom: 3px solid transparent;
+    }
+    .gender-tab.active {
+      color: var(--green);
+      border-bottom-color: var(--green);
+    }
+
+    /* ─── Body-type cards ─── */
+    .btype-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.28s cubic-bezier(0.34,1.56,0.64,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .btype-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(34,197,94,0.08), transparent 65%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .btype-card:hover { transform: translateY(-4px); border-color: #3a3a52; }
+    .btype-card:hover::before { opacity: 1; }
+    .btype-card.selected {
+      border-color: var(--green);
+      box-shadow: 0 0 0 1px var(--green), 0 8px 32px var(--green-glow);
+      transform: translateY(-4px);
+    }
+    .btype-card.selected::before { opacity: 1; }
+
+    /* check badge */
+    .check-badge {
+      position: absolute; top: 10px; right: 10px;
+      width: 26px; height: 26px;
+      background: var(--green);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transform: scale(0.4);
+      transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .btype-card.selected .check-badge { opacity: 1; transform: scale(1); }
+
+    /* ─── SVG body silhouettes ─── */
+    .body-svg {
+      display: block; margin: 0 auto;
+    }
+
+    /* ─── Slider ─── */
+    .days-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 9999px;
+      background: var(--border);
+      outline: none;
+      cursor: pointer;
+      width: 100%;
+    }
+    .days-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 10px var(--green-glow);
+      cursor: pointer;
+      transition: box-shadow 0.2s;
+    }
+    .days-slider::-webkit-slider-thumb:hover {
+      box-shadow: 0 0 18px var(--green-glow);
+    }
+
+    /* ─── Dropdown ─── */
+    .custom-select {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      width: 100%;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236b6b80' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+    }
+    .custom-select:focus { border-color: var(--green); }
+    .custom-select option { background: #1c1c28; }
+
+    /* ─── CTA Button ─── */
+    .cta-btn {
+      background: var(--green);
+      color: #050a05;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem;
+      letter-spacing: 0.1em;
+      padding: 18px 36px;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.22s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-btn::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px var(--green-glow); }
+    .cta-btn:hover::after { opacity: 1; }
+    .cta-btn:active { transform: translateY(0); }
+    .cta-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ─── Pill tags under card titles ─── */
+    .tag-pill {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+
+    /* ─── Fade-in animation for sections ─── */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeSlideUp 0.4s ease forwards; }
+
+    /* ─── Progress bar ─── */
+    .progress-fill { transition: width 0.5s cubic-bezier(0.34,1.2,0.64,1); }
+
+    /* ─── Day dots ─── */
+    .day-dot {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 600; font-size: 0.85rem;
+      transition: all 0.2s;
+      cursor: default;
+    }
+    .day-dot.active { border-color: var(--green); background: rgba(34,197,94,0.15); color: var(--green); }
+  </style>
+</head>
+<body class="relative z-10">
+
+  <!-- ═══════════════════ HEADER ═══════════════════ -->
+  <header class="relative z-10 max-w-3xl mx-auto px-6 pt-12 pb-4">
+    <div class="flex items-center gap-2 mb-4">
+      <span style="color:var(--green)" class="text-xs font-semibold tracking-widest uppercase">Step 1 of 2</span>
+      <div class="flex-1 h-1 rounded-full" style="background:var(--border)">
+        <div class="progress-fill h-full rounded-full" id="progressBar" style="background:var(--green); width:0%"></div>
+      </div>
+    </div>
+    <h1 class="hero-title text-5xl md:text-7xl" style="color:var(--text)">
+      BUILD YOUR<br/><span style="color:var(--green)">IDEAL BODY</span>
+    </h1>
+    <p class="mt-3 text-base" style="color:var(--muted)">
+      Select your body type, training frequency, and goal — we'll craft a plan made for you.
+    </p>
+  </header>
+
+  <main class="relative z-10 max-w-3xl mx-auto px-6 pb-20">
+
+    <!-- ═══════════════════ GENDER TABS ═══════════════════ -->
+    <div class="flex gap-8 mt-8 mb-6 border-b" style="border-color:var(--border)">
+      <button class="gender-tab active text-xl font-semibold pb-3 px-1" data-gender="male" onclick="switchGender('male')">
+        ♂ Male
+      </button>
+      <button class="gender-tab text-xl font-semibold pb-3 px-1" style="color:var(--muted)" data-gender="female" onclick="switchGender('female')">
+        ♀ Female
+      </button>
+    </div>
+
+    <!-- ═══════════════════ BODY TYPE SECTION ═══════════════════ -->
+    <section>
+      <h2 class="text-sm font-semibold tracking-widest uppercase mb-4" style="color:var(--muted)">
+        Your Body Type
+      </h2>
+
+      <!-- MALE CARDS -->
+      <div id="male-cards" class="grid grid-cols-1 sm:grid-cols-3 gap-4 fade-in">
+
+        <!-- Endomorph Male -->
+        <div class="btype-card p-4" data-type="endomorph" data-gender="male" onclick="selectCard(this)">
+          <div class="check-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <svg class="body-svg mb-3" width="80" height="120" viewBox="0 0 80 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Endomorph male: round/wide shoulders, wide hips, thicker limbs -->
+            <ellipse cx="40" cy="22" rx="16" ry="16" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <!-- torso -->
+            <path d="M16 42 Q8 60 10 80 Q16 95 26 98 Q40 102 54 98 Q64 95 70 80 Q72 60 64 42 Q56 36 40 36 Q24 36 16 42Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <!-- arms -->
+            <path d="M16 44 Q5 58 8 76 Q10 82 16 80 Q20 60 22 44Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <path d="M64 44 Q75 58 72 76 Q70 82 64 80 Q60 60 58 44Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <!-- legs -->
+            <path d="M26 98 Q22 108 24 118 Q28 122 34 118 Q36 108 38 98Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <path d="M54 98 Q58 108 56 118 Q52 122 46 118 Q44 108 42 98Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <!-- highlight -->
+            <ellipse cx="40" cy="22" rx="6" ry="5" fill="#3a3a52" opacity="0.5"/>
+          </svg>
+          <div class="text-center">
+            <span class="tag-pill mb-1" style="background:rgba(234,88,12,0.15);color:#fb923c">Endomorph</span>
+            <h3 class="font-semibold mt-1 text-base">The Stocky Build</h3>
+            <p class="text-xs mt-1 leading-relaxed" style="color:var(--muted)">Wider frame, gains muscle & fat easily, slower metabolism. Think powerlifter physique.</p>
+          </div>
+        </div>
+
+        <!-- Ectomorph Male -->
+        <div class="btype-card p-4" data-type="ectomorph" data-gender="male" onclick="selectCard(this)">
+          <div class="check-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <svg class="body-svg mb-3" width="80" height="120" viewBox="0 0 80 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Ectomorph male: narrow, lean, long limbs -->
+            <ellipse cx="40" cy="20" rx="12" ry="12" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <path d="M26 36 Q22 56 24 78 Q26 90 34 92 Q40 94 46 92 Q54 90 56 78 Q58 56 54 36 Q48 32 40 32 Q32 32 26 36Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <!-- arms narrow -->
+            <path d="M26 38 Q18 52 20 70 Q21 76 26 74 Q28 56 30 38Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <path d="M54 38 Q62 52 60 70 Q59 76 54 74 Q52 56 50 38Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <!-- legs narrow -->
+            <path d="M34 92 Q31 104 33 116 Q36 120 40 116 Q41 104 40 92Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <path d="M46 92 Q49 104 47 116 Q44 120 40 116 Q39 104 40 92Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <ellipse cx="40" cy="20" rx="5" ry="4" fill="#3a3a52" opacity="0.5"/>
+          </svg>
+          <div class="text-center">
+            <span class="tag-pill mb-1" style="background:rgba(59,130,246,0.15);color:#60a5fa">Ectomorph</span>
+            <h3 class="font-semibold mt-1 text-base">The Lean Build</h3>
+            <p class="text-xs mt-1 leading-relaxed" style="color:var(--muted)">Slim, long limbs, struggles to gain weight. Fast metabolism. Think marathon runner.</p>
+          </div>
+        </div>
+
+        <!-- Mesomorph Male -->
+        <div class="btype-card p-4" data-type="mesomorph" data-gender="male" onclick="selectCard(this)">
+          <div class="check-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <svg class="body-svg mb-3" width="80" height="120" viewBox="0 0 80 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Mesomorph male: V-taper, athletic, defined waist -->
+            <ellipse cx="40" cy="20" rx="13" ry="13" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <path d="M18 38 Q14 54 20 74 Q24 86 34 90 Q40 92 46 90 Q56 86 60 74 Q66 54 62 38 Q54 30 40 30 Q26 30 18 38Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <!-- defined waist indent -->
+            <path d="M22 58 Q28 54 40 54 Q52 54 58 58" stroke="#3a3a52" stroke-width="1.5" fill="none" opacity="0.6"/>
+            <!-- arms athletic -->
+            <path d="M18 40 Q10 54 12 68 Q13 74 18 72 Q22 58 24 40Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <path d="M62 40 Q70 54 68 68 Q67 74 62 72 Q58 58 56 40Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <!-- legs -->
+            <path d="M34 90 Q30 102 32 114 Q35 118 40 114 Q41 102 40 90Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <path d="M46 90 Q50 102 48 114 Q45 118 40 114 Q39 102 40 90Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <ellipse cx="40" cy="20" rx="5" ry="4" fill="#3a3a52" opacity="0.5"/>
+          </svg>
+          <div class="text-center">
+            <span class="tag-pill mb-1" style="background:rgba(34,197,94,0.15);color:#4ade80">Mesomorph</span>
+            <h3 class="font-semibold mt-1 text-base">The Athletic Build</h3>
+            <p class="text-xs mt-1 leading-relaxed" style="color:var(--muted)">Naturally muscular, defined shape, responds well to training. Think sprinter physique.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FEMALE CARDS (hidden by default) -->
+      <div id="female-cards" class="grid grid-cols-1 sm:grid-cols-3 gap-4 fade-in hidden">
+
+        <!-- Endomorph Female -->
+        <div class="btype-card p-4" data-type="endomorph" data-gender="female" onclick="selectCard(this)">
+          <div class="check-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <svg class="body-svg mb-3" width="80" height="120" viewBox="0 0 80 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Endomorph female: curvy, wider hips, fuller figure -->
+            <ellipse cx="40" cy="20" rx="13" ry="13" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <!-- torso - pear shaped, wider hips -->
+            <path d="M26 36 Q20 50 20 64 Q18 78 22 88 Q30 100 40 102 Q50 100 58 88 Q62 78 60 64 Q60 50 54 36 Q48 32 40 32 Q32 32 26 36Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <!-- bust suggestion -->
+            <ellipse cx="32" cy="46" rx="8" ry="6" fill="#252535" stroke="#3a3a52" stroke-width="1"/>
+            <ellipse cx="48" cy="46" rx="8" ry="6" fill="#252535" stroke="#3a3a52" stroke-width="1"/>
+            <!-- arms -->
+            <path d="M26 38 Q17 52 18 68 Q19 74 24 72 Q26 56 30 38Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <path d="M54 38 Q63 52 62 68 Q61 74 56 72 Q54 56 50 38Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <!-- legs -->
+            <path d="M28 100 Q24 110 26 118 Q30 122 36 118 Q38 108 38 100Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <path d="M52 100 Q56 110 54 118 Q50 122 44 118 Q42 108 42 100Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+          </svg>
+          <div class="text-center">
+            <span class="tag-pill mb-1" style="background:rgba(234,88,12,0.15);color:#fb923c">Endomorph</span>
+            <h3 class="font-semibold mt-1 text-base">The Curvy Build</h3>
+            <p class="text-xs mt-1 leading-relaxed" style="color:var(--muted)">Fuller figure, wider hips, gains weight easily. Soft, rounded shape. Think hourglass-plus.</p>
+          </div>
+        </div>
+
+        <!-- Ectomorph Female -->
+        <div class="btype-card p-4" data-type="ectomorph" data-gender="female" onclick="selectCard(this)">
+          <div class="check-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <svg class="body-svg mb-3" width="80" height="120" viewBox="0 0 80 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Ectomorph female: straight, slim, lean -->
+            <ellipse cx="40" cy="19" rx="11" ry="11" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <path d="M28 34 Q24 52 26 72 Q28 84 36 88 Q40 90 44 88 Q52 84 54 72 Q56 52 52 34 Q47 30 40 30 Q33 30 28 34Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <!-- slim bust -->
+            <ellipse cx="34" cy="42" rx="6" ry="4" fill="#252535" stroke="#3a3a52" stroke-width="1"/>
+            <ellipse cx="46" cy="42" rx="6" ry="4" fill="#252535" stroke="#3a3a52" stroke-width="1"/>
+            <!-- arms slim -->
+            <path d="M28 36 Q20 50 22 66 Q23 72 28 70 Q30 54 32 36Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <path d="M52 36 Q60 50 58 66 Q57 72 52 70 Q50 54 48 36Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <!-- legs slim -->
+            <path d="M36 88 Q33 100 35 112 Q38 116 41 112 Q41 100 40 88Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <path d="M44 88 Q47 100 45 112 Q42 116 39 112 Q39 100 40 88Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+          </svg>
+          <div class="text-center">
+            <span class="tag-pill mb-1" style="background:rgba(59,130,246,0.15);color:#60a5fa">Ectomorph</span>
+            <h3 class="font-semibold mt-1 text-base">The Slim Build</h3>
+            <p class="text-xs mt-1 leading-relaxed" style="color:var(--muted)">Lean, straight frame, difficulty gaining weight. Fast metabolism. Think runway model.</p>
+          </div>
+        </div>
+
+        <!-- Mesomorph Female -->
+        <div class="btype-card p-4" data-type="mesomorph" data-gender="female" onclick="selectCard(this)">
+          <div class="check-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <svg class="body-svg mb-3" width="80" height="120" viewBox="0 0 80 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Mesomorph female: hourglass, athletic, defined waist -->
+            <ellipse cx="40" cy="19" rx="12" ry="12" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <path d="M22 34 Q17 48 22 62 Q24 68 28 70 Q34 86 40 88 Q46 86 52 70 Q56 68 58 62 Q63 48 58 34 Q52 28 40 28 Q28 28 22 34Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <!-- hourglass waist indent -->
+            <path d="M24 56 Q32 52 40 52 Q48 52 56 56" stroke="#3a3a52" stroke-width="1.5" fill="none" opacity="0.7"/>
+            <!-- bust -->
+            <ellipse cx="33" cy="42" rx="8" ry="6" fill="#252535" stroke="#3a3a52" stroke-width="1"/>
+            <ellipse cx="47" cy="42" rx="8" ry="6" fill="#252535" stroke="#3a3a52" stroke-width="1"/>
+            <!-- arms -->
+            <path d="M22 36 Q14 50 16 64 Q17 70 22 68 Q24 52 26 36Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <path d="M58 36 Q66 50 64 64 Q63 70 58 68 Q56 52 54 36Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <!-- legs -->
+            <path d="M34 88 Q30 100 32 112 Q35 116 40 112 Q41 100 40 88Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+            <path d="M46 88 Q50 100 48 112 Q45 116 40 112 Q39 100 40 88Z" fill="#2a2a3a" stroke="#3a3a52" stroke-width="1.5"/>
+          </svg>
+          <div class="text-center">
+            <span class="tag-pill mb-1" style="background:rgba(34,197,94,0.15);color:#4ade80">Mesomorph</span>
+            <h3 class="font-semibold mt-1 text-base">The Athletic Build</h3>
+            <p class="text-xs mt-1 leading-relaxed" style="color:var(--muted)">Hourglass figure, toned naturally, responds fast to training. Think fitness model.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ═══════════════════ WORKOUT DAYS ═══════════════════ -->
+    <section class="mt-10">
+      <h2 class="text-sm font-semibold tracking-widest uppercase mb-1" style="color:var(--muted)">
+        Training Days Per Week
+      </h2>
+      <div class="flex items-end gap-4 mb-4">
+        <span class="hero-title text-5xl" style="color:var(--green)" id="dayDisplay">4</span>
+        <span class="mb-2 text-base" style="color:var(--muted)">days / week</span>
+      </div>
+
+      <input type="range" class="days-slider" id="daysSlider" min="3" max="6" value="4" step="1" oninput="updateDays(this.value)"/>
+
+      <div class="flex justify-between mt-3 px-1">
+        <span class="text-xs" style="color:var(--muted)">3 days</span>
+        <span class="text-xs" style="color:var(--muted)">6 days</span>
+      </div>
+
+      <!-- Day dots visualiser -->
+      <div class="flex gap-2 mt-4" id="dayDots">
+        <div class="day-dot" data-d="1">M</div>
+        <div class="day-dot" data-d="2">T</div>
+        <div class="day-dot" data-d="3">W</div>
+        <div class="day-dot" data-d="4">T</div>
+        <div class="day-dot" data-d="5">F</div>
+        <div class="day-dot" data-d="6">S</div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ FITNESS GOAL ═══════════════════ -->
+    <section class="mt-10">
+      <h2 class="text-sm font-semibold tracking-widest uppercase mb-3" style="color:var(--muted)">
+        Fitness Goal
+      </h2>
+      <div class="relative">
+        <select class="custom-select" id="goalSelect" onchange="updateProgress()">
+          <option value="" disabled selected>Choose your goal…</option>
+          <option value="lose_fat">🔥 Lose Fat</option>
+          <option value="build_muscle">💪 Build Muscle</option>
+          <option value="body_recomp">⚡ Body Recomposition</option>
+        </select>
+      </div>
+
+      <!-- Goal info chip -->
+      <div id="goalInfo" class="mt-3 hidden rounded-xl px-4 py-3 text-sm" style="background:var(--surface2);border:1px solid var(--border)">
+        <p id="goalInfoText" style="color:var(--muted)"></p>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ CTA ═══════════════════ -->
+    <section class="mt-10">
+      <div id="validationMsg" class="hidden text-sm mb-3 text-center" style="color:#f87171">
+        ⚠️ Please select a body type and a fitness goal to continue.
+      </div>
+      <button class="cta-btn" id="generateBtn" onclick="generatePlan()">
+        Generate My Plan →
+      </button>
+      <p class="text-center text-xs mt-3" style="color:var(--muted)">Your data stays on your device. No account needed.</p>
+    </section>
+
+  </main>
+
+  <script>
+    let selectedGender = 'male';
+    let selectedType = null;
+    let selectedDays = 4;
+    let selectedGoal = null;
+
+    const goalMeta = {
+      lose_fat: "Calorie deficit + cardio-focused training. Expect 4–8 weeks to see visible changes.",
+      build_muscle: "Progressive overload with surplus calories. Ideal for beginners and experienced lifters alike.",
+      body_recomp: "Simultaneously lose fat & gain muscle. Best for those with 6–12 months of consistency."
+    };
+
+    function switchGender(g) {
+      selectedGender = g;
+      // Reset card selection when switching
+      selectedType = null;
+      document.querySelectorAll('.btype-card').forEach(c => c.classList.remove('selected'));
+
+      document.querySelectorAll('.gender-tab').forEach(t => {
+        t.classList.remove('active');
+        t.style.color = 'var(--muted)';
+      });
+      const tab = document.querySelector(`[data-gender="${g}"]`);
+      tab.classList.add('active');
+      tab.style.color = '';
+
+      document.getElementById('male-cards').classList.add('hidden');
+      document.getElementById('female-cards').classList.add('hidden');
+      const el = document.getElementById(`${g}-cards`);
+      el.classList.remove('hidden');
+      el.classList.remove('fade-in');
+      void el.offsetWidth;
+      el.classList.add('fade-in');
+      updateProgress();
+    }
+
+    function selectCard(card) {
+      const gender = card.dataset.gender;
+      if (gender !== selectedGender) return;
+      document.querySelectorAll(`#${gender}-cards .btype-card`).forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedType = card.dataset.type;
+      updateProgress();
+    }
+
+    function updateDays(val) {
+      selectedDays = parseInt(val);
+      document.getElementById('dayDisplay').textContent = val;
+      // Update slider gradient
+      const slider = document.getElementById('daysSlider');
+      const pct = ((val - 3) / (6 - 3)) * 100;
+      slider.style.background = `linear-gradient(to right, var(--green) ${pct}%, var(--border) ${pct}%)`;
+      // Update dots
+      document.querySelectorAll('.day-dot').forEach(dot => {
+        dot.classList.toggle('active', parseInt(dot.dataset.d) <= selectedDays);
+      });
+      updateProgress();
+    }
+
+    document.getElementById('goalSelect').addEventListener('change', function() {
+      selectedGoal = this.value;
+      const infoEl = document.getElementById('goalInfo');
+      const textEl = document.getElementById('goalInfoText');
+      if (selectedGoal && goalMeta[selectedGoal]) {
+        textEl.textContent = goalMeta[selectedGoal];
+        infoEl.classList.remove('hidden');
+      } else {
+        infoEl.classList.add('hidden');
+      }
+      updateProgress();
+    });
+
+    function updateProgress() {
+      let score = 0;
+      if (selectedGender) score += 15;
+      if (selectedType) score += 40;
+      if (selectedDays) score += 20;
+      if (selectedGoal) score += 25;
+      document.getElementById('progressBar').style.width = score + '%';
+    }
+
+    function generatePlan() {
+      selectedGoal = document.getElementById('goalSelect').value;
+      if (!selectedType || !selectedGoal) {
+        document.getElementById('validationMsg').classList.remove('hidden');
+        return;
+      }
+      document.getElementById('validationMsg').classList.add('hidden');
+
+      const plan = { gender: selectedGender, bodyType: selectedType, daysPerWeek: selectedDays, goal: selectedGoal };
+      localStorage.setItem('fitPlan', JSON.stringify(plan));
+
+      // Button loading state
+      const btn = document.getElementById('generateBtn');
+      btn.textContent = 'Building your plan…';
+      btn.disabled = true;
+
+      setTimeout(() => { window.location.href = 'results.html'; }, 800);
+    }
+
+    // Init
+    updateDays(4);
+    updateProgress();
+  </script>
+</body>
+</html>

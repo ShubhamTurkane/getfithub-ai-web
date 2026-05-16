@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GetFitHub.AI — Your AI-Powered Indian Fitness Companion</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1A7A4A',
+            'primary-light': '#22A060',
+            'primary-glow': '#2ECC7A',
+          },
+          fontFamily: {
+            display: ['Rajdhani', 'sans-serif'],
+            body: ['DM Sans', 'sans-serif'],
+            mono: ['Space Mono', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0D1117;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      color: #C9D8C5;
+      overflow-x: hidden;
+    }
+
+    .hero-bg {
+      background:
+        radial-gradient(ellipse 70% 55% at 8% 18%, rgba(26,122,74,0.22) 0%, transparent 60%),
+        radial-gradient(ellipse 55% 65% at 92% 82%, rgba(26,122,74,0.15) 0%, transparent 55%),
+        #0D1117;
+    }
+
+    .grid-lines {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(26,122,74,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(26,122,74,0.07) 1px, transparent 1px);
+      background-size: 56px 56px;
+    }
+
+    /* Hero entrance — using animation-fill-mode:both so opacity starts at 0 via keyframe */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .anim-1 { animation: fadeUp 0.65s ease both 0.05s; }
+    .anim-2 { animation: fadeUp 0.65s ease both 0.18s; }
+    .anim-3 { animation: fadeUp 0.65s ease both 0.32s; }
+    .anim-4 { animation: fadeUp 0.65s ease both 0.46s; }
+    .anim-5 { animation: fadeUp 0.65s ease both 0.58s; }
+    .anim-6 { animation: fadeUp 0.65s ease both 0.68s; }
+
+    @keyframes floatY  { 0%,100%{transform:translateY(0)}  50%{transform:translateY(-16px)} }
+    @keyframes floatY2 { 0%,100%{transform:translateY(0)}  50%{transform:translateY(-9px)}  }
+    .float-card   { animation: floatY  5.5s ease-in-out infinite; }
+    .float-b1     { animation: floatY2 5s   ease-in-out 1.2s infinite; }
+    .float-b2     { animation: floatY2 4.8s ease-in-out 0.5s infinite; }
+
+    @keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.35;transform:scale(.8)} }
+    .dot-pulse { animation: pulseDot 2s ease-in-out infinite; }
+
+    .btn-glow {
+      background: linear-gradient(135deg, #1A7A4A 0%, #22A060 100%);
+      box-shadow: 0 0 28px rgba(26,122,74,.55), 0 0 70px rgba(26,122,74,.2), inset 0 1px 0 rgba(255,255,255,.12);
+      transition: transform .25s ease, box-shadow .25s ease;
+      position: relative; overflow: hidden;
+    }
+    .btn-glow::after {
+      content:''; position:absolute; top:-50%; left:-60%;
+      width:38%; height:200%;
+      background:rgba(255,255,255,.14);
+      transform:skewX(-22deg); transition:left .5s ease;
+    }
+    .btn-glow:hover::after { left:130%; }
+    .btn-glow:hover { transform:translateY(-3px); box-shadow:0 0 50px rgba(26,122,74,.75),0 0 100px rgba(26,122,74,.3); }
+
+    .feat-card {
+      background: linear-gradient(145deg, rgba(22,32,48,.92), rgba(15,22,32,.97));
+      border: 1px solid rgba(26,122,74,.18);
+      transition: transform .35s ease, border-color .35s ease, box-shadow .35s ease;
+      position: relative; overflow: hidden;
+    }
+    .feat-card::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:2px;
+      background:linear-gradient(90deg,transparent,#1A7A4A,#2ECC7A,transparent);
+      transform:scaleX(0); transition:transform .4s ease;
+    }
+    .feat-card:hover { transform:translateY(-8px); border-color:rgba(26,122,74,.5); box-shadow:0 24px 60px rgba(0,0,0,.45),0 0 35px rgba(26,122,74,.15); }
+    .feat-card:hover::before { transform:scaleX(1); }
+
+    .icon-box {
+      width:62px; height:62px; border-radius:14px;
+      background:rgba(26,122,74,.12); border:1px solid rgba(26,122,74,.25);
+      display:flex; align-items:center; justify-content:center;
+      transition:background .3s, box-shadow .3s; flex-shrink:0;
+    }
+    .feat-card:hover .icon-box { background:rgba(26,122,74,.22); box-shadow:0 0 24px rgba(26,122,74,.35); }
+
+    .chip {
+      display:inline-flex; align-items:center; gap:6px;
+      background:rgba(26,122,74,.14); border:1px solid rgba(26,122,74,.35);
+      color:#2ECC7A; font-family:'Space Mono',monospace;
+      font-size:.62rem; letter-spacing:.12em; padding:4px 10px; border-radius:99px;
+    }
+
+    .navbar {
+      background:rgba(13,17,23,.88);
+      backdrop-filter:blur(20px) saturate(140%);
+      -webkit-backdrop-filter:blur(20px) saturate(140%);
+      border-bottom:1px solid rgba(26,122,74,.12);
+      transition:border-color .3s;
+    }
+
+    .sbar  { height:4px; background:rgba(26,122,74,.18); border-radius:99px; overflow:hidden; }
+    .sfill { height:100%; border-radius:99px; background:linear-gradient(90deg,#1A7A4A,#2ECC7A); }
+
+    .reveal { opacity:0; transform:translateY(30px); transition:opacity .65s ease, transform .65s ease; }
+    .reveal.in { opacity:1; transform:translateY(0); }
+
+    .step-line {
+      position:absolute; top:46px; left:calc(16.5% + 12px); right:calc(16.5% + 12px); height:1px;
+      background:linear-gradient(90deg,transparent,#1A7A4A 30%,#2ECC7A 50%,#1A7A4A 70%,transparent);
+    }
+
+    .orb { position:absolute; border-radius:50%; filter:blur(70px); pointer-events:none; }
+
+    .hero-card {
+      background:linear-gradient(145deg,rgba(22,32,48,.94),rgba(15,22,32,.98));
+      border:1px solid rgba(26,122,74,.32); border-radius:28px;
+      box-shadow:0 32px 80px rgba(0,0,0,.6),0 0 40px rgba(26,122,74,.12);
+    }
+    .mini-badge {
+      background:rgba(17,26,38,.97); border:1px solid rgba(26,122,74,.32);
+      border-radius:16px; box-shadow:0 8px 30px rgba(0,0,0,.5);
+    }
+
+    .footer-top { border-top:1px solid rgba(26,122,74,.14); background:linear-gradient(0deg,rgba(26,122,74,.06),transparent 60%); }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar fixed top-0 left-0 right-0 z-50">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="relative flex-shrink-0">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#1A7A4A">
+            <span style="font-family:'Rajdhani',sans-serif;font-weight:700;color:white;font-size:1.1rem">G</span>
+          </div>
+          <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full dot-pulse" style="background:#2ECC7A;display:block"></span>
+        </div>
+        <span style="font-family:'Rajdhani',sans-serif;font-weight:700;color:white;font-size:1.2rem;letter-spacing:.04em">
+          GetFitHub<span style="color:#2ECC7A">.AI</span>
+        </span>
+      </div>
+      <div class="hidden md:flex items-center gap-8 text-sm" style="color:#8fa89a">
+        <a href="#features" style="transition:color .2s" onmouseover="this.style.color='white'" onmouseout="this.style.color='#8fa89a'">Features</a>
+        <a href="#how-it-works" style="transition:color .2s" onmouseover="this.style.color='white'" onmouseout="this.style.color='#8fa89a'">How It Works</a>
+        <a href="#cta" style="transition:color .2s" onmouseover="this.style.color='white'" onmouseout="this.style.color='#8fa89a'">About</a>
+      </div>
+      <a href="calculator.html" class="btn-glow text-white px-5 py-2.5 rounded-xl text-xs" style="font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.12em;text-transform:uppercase">
+        Get Started
+      </a>
+    </div>
+  </nav>
+
+
+  <!-- HERO -->
+  <section class="hero-bg relative min-h-screen flex items-center pt-24 pb-20 overflow-hidden">
+    <div class="grid-lines"></div>
+    <div class="orb" style="width:320px;height:320px;background:#1A7A4A;opacity:.18;top:-80px;left:-80px"></div>
+    <div class="orb" style="width:260px;height:260px;background:#1A7A4A;opacity:.1;bottom:40px;right:60px"></div>
+
+    <div class="max-w-6xl mx-auto px-6 relative z-10 w-full">
+      <div class="grid md:grid-cols-2 gap-14 items-center">
+
+        <!-- Left copy -->
+        <div>
+          <div class="chip anim-1" style="display:inline-flex;margin-bottom:2rem">
+            <span class="w-1.5 h-1.5 rounded-full dot-pulse flex-shrink-0" style="background:#2ECC7A"></span>
+            AI-POWERED · MADE FOR INDIA
+          </div>
+
+          <h1 class="anim-2 text-white font-bold leading-none" style="font-family:'Rajdhani',sans-serif;font-size:clamp(2.7rem,5.5vw,4.3rem);line-height:1.02;margin-bottom:1.5rem">
+            Your AI-Powered<br/>
+            <span style="background:linear-gradient(130deg,#2ECC7A,#1A7A4A);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">
+              Indian Fitness
+            </span><br/>
+            Companion
+          </h1>
+
+          <p class="anim-3 text-base leading-relaxed" style="color:#8fa89a;max-width:420px;margin-bottom:2.5rem">
+            Personalised plans rooted in Indian nutrition science. Calculate your metrics, discover your body type, and let AI craft your perfect path to health.
+          </p>
+
+          <div class="anim-4 flex flex-wrap gap-4 items-center" style="margin-bottom:3rem">
+            <a href="calculator.html" class="btn-glow inline-flex items-center gap-3 text-white px-8 py-4 rounded-2xl text-sm" style="font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.12em;text-transform:uppercase">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              Start Your Journey
+            </a>
+            <div class="flex items-center gap-2 text-sm" style="color:#5a7a68">
+              <svg width="14" height="14" fill="none" stroke="#1A7A4A" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Free · No signup required
+            </div>
+          </div>
+
+          <div class="anim-5 flex gap-8 pt-8" style="border-top:1px solid rgba(255,255,255,.06)">
+            <div>
+              <p style="font-family:'Rajdhani',sans-serif;font-weight:700;color:white;font-size:1.5rem">10K+</p>
+              <p style="font-size:.72rem;color:#5a7a68;margin-top:2px">Active Users</p>
+            </div>
+            <div>
+              <p style="font-family:'Rajdhani',sans-serif;font-weight:700;color:white;font-size:1.5rem">5 sec</p>
+              <p style="font-size:.72rem;color:#5a7a68;margin-top:2px">Avg Plan Time</p>
+            </div>
+            <div>
+              <p style="font-family:'Rajdhani',sans-serif;font-weight:700;color:white;font-size:1.5rem">100%</p>
+              <p style="font-size:.72rem;color:#5a7a68;margin-top:2px">Personalised</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: floating card -->
+        <div class="anim-6 flex justify-center md:justify-end">
+          <div class="float-card relative" style="max-width:340px;width:100%;padding-top:20px;padding-right:20px">
+
+            <div class="hero-card p-7">
+              <div class="flex items-center gap-3" style="margin-bottom:1.5rem">
+                <div class="icon-box">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2ECC7A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+                  </svg>
+                </div>
+                <div style="flex:1;min-width:0">
+                  <p style="font-family:'Rajdhani',sans-serif;font-weight:600;color:white;font-size:1.1rem;line-height:1">Live Analysis</p>
+                  <p style="font-size:.7rem;color:#5a7a68;margin-top:4px">Updating your metrics…</p>
+                </div>
+                <div class="flex gap-1 flex-shrink-0">
+                  <span class="w-2 h-2 rounded-full dot-pulse" style="background:#2ECC7A;display:block"></span>
+                  <span class="w-2 h-2 rounded-full dot-pulse" style="background:#1A7A4A;animation-delay:.4s;display:block"></span>
+                  <span class="w-2 h-2 rounded-full dot-pulse" style="background:#22A060;animation-delay:.8s;display:block"></span>
+                </div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:18px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:.72rem;margin-bottom:6px">
+                    <span style="color:#8fa89a">BMI Score</span>
+                    <span style="color:#2ECC7A;font-family:'Space Mono',monospace">22.4</span>
+                  </div>
+                  <div class="sbar"><div class="sfill" style="width:62%"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:.72rem;margin-bottom:6px">
+                    <span style="color:#8fa89a">Daily Calories</span>
+                    <span style="color:#2ECC7A;font-family:'Space Mono',monospace">2,180 kcal</span>
+                  </div>
+                  <div class="sbar"><div class="sfill" style="width:78%"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:.72rem;margin-bottom:6px">
+                    <span style="color:#8fa89a">Protein Target</span>
+                    <span style="color:#2ECC7A;font-family:'Space Mono',monospace">148 g</span>
+                  </div>
+                  <div class="sbar"><div class="sfill" style="width:55%"></div></div>
+                </div>
+              </div>
+
+              <div style="background:rgba(26,122,74,.1);border:1px solid rgba(26,122,74,.22);border-radius:12px;padding:12px 14px">
+                <p style="font-family:'Space Mono',monospace;font-size:.6rem;color:#2ECC7A;margin-bottom:5px">✦ AI INSIGHT</p>
+                <p style="font-size:.74rem;color:#8fa89a;line-height:1.5">Ideal type: <strong style="color:#c9d8c5">Mesomorph</strong>. Recommend Dal-Rice protein schedule with morning cardio.</p>
+              </div>
+            </div>
+
+            <!-- Badge: body type -->
+            <div class="mini-badge float-b1 absolute" style="top:-4px;right:-4px;padding:12px 16px">
+              <p style="font-family:'Space Mono',monospace;font-size:.58rem;color:#5a7a68;margin-bottom:3px">Body Type</p>
+              <p style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.15rem;color:#2ECC7A;line-height:1">Mesomorph</p>
+            </div>
+
+            <!-- Badge: plan ready -->
+            <div class="mini-badge float-b2 absolute flex items-center gap-2" style="bottom:-16px;left:-16px;padding:10px 16px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2ECC7A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <p style="font-size:.72rem;color:#c9d8c5;white-space:nowrap">Plan Generated!</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- FEATURES -->
+  <section id="features" class="py-28 relative overflow-hidden" style="background:#0F1620">
+    <div class="max-w-6xl mx-auto px-6">
+
+      <div class="text-center reveal" style="margin-bottom:4rem">
+        <div class="chip" style="margin-bottom:1.25rem">CORE FEATURES</div>
+        <h2 class="font-bold text-white leading-none" style="font-family:'Rajdhani',sans-serif;font-size:clamp(2rem,4vw,3rem);margin-bottom:1.25rem">
+          Everything You Need,<br/><span style="color:#2ECC7A">Built for Bharat</span>
+        </h2>
+        <p style="color:#5a7a68;max-width:400px;margin:0 auto;line-height:1.7">Three powerful tools — designed around Indian bodies, lifestyles and food.</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+
+        <div class="feat-card rounded-3xl p-8 reveal" style="transition-delay:.1s">
+          <p style="font-family:'Space Mono',monospace;font-size:.58rem;color:#1A7A4A;letter-spacing:.14em;margin-bottom:1.2rem">01 / MEASURE</p>
+          <div class="icon-box" style="margin-bottom:1.5rem">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2ECC7A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M9 10l2 2 4-4"/>
+            </svg>
+          </div>
+          <h3 style="font-family:'Rajdhani',sans-serif;font-weight:700;color:white;font-size:1.4rem;margin-bottom:.75rem">Calculate BMI / BMR</h3>
+          <p style="font-size:.84rem;color:#5a7a68;line-height:1.65;margin-bottom:1.5rem">Get precise Body Mass Index and Basal Metabolic Rate calculations calibrated for South Asian physiology and activity patterns.</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="chip">BMI</span><span class="chip">BMR</span><span class="chip">TDEE</span>
+          </div>
+        </div>
+
+        <div class="feat-card rounded-3xl p-8 reveal" style="transition-delay:.2s;background:linear-gradient(160deg,rgba(26,122,74,.14),rgba(15,22,32,.98));border-color:rgba(26,122,74,.38)">
+          <p style="font-family:'Space Mono',monospace;font-size:.58rem;color:#1A7A4A;letter-spacing:.14em;margin-bottom:1.2rem">02 / IDENTIFY</p>
+          <div class="icon-box" style="margin-bottom:1.5rem;background:rgba(26,122,74,.2)">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2ECC7A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/><path d="M19 14l2 2-2 2"/>
+            </svg>
+          </div>
+          <h3 style="font-family:'Rajdhani',sans-serif;font-weight:700;color:white;font-size:1.4rem;margin-bottom:.75rem">Choose Body Type</h3>
+          <p style="font-size:.84rem;color:#5a7a68;line-height:1.65;margin-bottom:1.5rem">Identify your somatotype — Ectomorph, Mesomorph, or Endomorph — and unlock a fitness roadmap built for your unique biology.</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="chip">ECTO</span><span class="chip">MESO</span><span class="chip">ENDO</span>
+          </div>
+        </div>
+
+        <div class="feat-card rounded-3xl p-8 reveal" style="transition-delay:.3s">
+          <p style="font-family:'Space Mono',monospace;font-size:.58rem;color:#1A7A4A;letter-spacing:.14em;margin-bottom:1.2rem">03 / TRANSFORM</p>
+          <div class="icon-box" style="margin-bottom:1.5rem">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2ECC7A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <h3 style="font-family:'Rajdhani',sans-serif;font-weight:700;color:white;font-size:1.4rem;margin-bottom:.75rem">Get AI Plans</h3>
+          <p style="font-size:.84rem;color:#5a7a68;line-height:1.65;margin-bottom:1.5rem">Receive AI-generated workout and diet plans featuring Indian superfoods — dal, paneer, millets, ghee — mapped to your exact goals.</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="chip">DIET</span><span class="chip">WORKOUT</span><span class="chip">AI</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- HOW IT WORKS -->
+  <section id="how-it-works" class="py-28 hero-bg relative overflow-hidden">
+    <div class="orb" style="width:220px;height:220px;background:#1A7A4A;opacity:.1;top:40px;right:40px"></div>
+    <div class="max-w-5xl mx-auto px-6 relative z-10">
+
+      <div class="text-center reveal" style="margin-bottom:4rem">
+        <div class="chip" style="margin-bottom:1.25rem">THE JOURNEY</div>
+        <h2 class="font-bold text-white" style="font-family:'Rajdhani',sans-serif;font-size:clamp(2rem,4vw,3rem)">Your Path to Results</h2>
+      </div>
+
+      <div class="relative">
+        <div class="step-line hidden md:block"></div>
+        <div class="grid md:grid-cols-3 gap-8 text-center">
+
+          <div class="reveal" style="transition-delay:.1s">
+            <div class="relative inline-flex items-center justify-center" style="width:92px;height:92px;border-radius:20px;background:linear-gradient(135deg,rgba(26,122,74,.2),rgba(15,22,32,.95));border:1px solid rgba(26,122,74,.35);margin-bottom:1.5rem">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#2ECC7A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <div class="absolute" style="top:-14px;right:-14px;width:28px;height:28px;background:#1A7A4A;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-weight:700;color:white;font-size:.7rem">1</div>
+            </div>
+            <h4 style="font-family:'Rajdhani',sans-serif;font-weight:700;color:white;font-size:1.2rem;margin-bottom:.5rem">Enter Your Details</h4>
+            <p style="font-size:.82rem;color:#5a7a68;line-height:1.6">Height, weight, age, activity level — your profile takes under 30 seconds.</p>
+          </div>
+
+          <div class="reveal" style="transition-delay:.2s">
+            <div class="relative inline-flex items-center justify-center" style="width:92px;height:92px;border-radius:20px;background:linear-gradient(135deg,rgba(26,122,74,.25),rgba(15,22,32,.95));border:1px solid rgba(26,122,74,.45);margin-bottom:1.5rem">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#2ECC7A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+              <div class="absolute" style="top:-14px;right:-14px;width:28px;height:28px;background:#1A7A4A;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-weight:700;color:white;font-size:.7rem">2</div>
+            </div>
+            <h4 style="font-family:'Rajdhani',sans-serif;font-weight:700;color:white;font-size:1.2rem;margin-bottom:.5rem">AI Analyses You</h4>
+            <p style="font-size:.82rem;color:#5a7a68;line-height:1.6">Our model computes BMI, BMR, identifies your body type and understands your goal.</p>
+          </div>
+
+          <div class="reveal" style="transition-delay:.3s">
+            <div class="relative inline-flex items-center justify-center" style="width:92px;height:92px;border-radius:20px;background:linear-gradient(135deg,rgba(26,122,74,.2),rgba(15,22,32,.95));border:1px solid rgba(26,122,74,.35);margin-bottom:1.5rem">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#2ECC7A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              <div class="absolute" style="top:-14px;right:-14px;width:28px;height:28px;background:#1A7A4A;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-weight:700;color:white;font-size:.7rem">3</div>
+            </div>
+            <h4 style="font-family:'Rajdhani',sans-serif;font-weight:700;color:white;font-size:1.2rem;margin-bottom:.5rem">Get Your Plan</h4>
+            <p style="font-size:.82rem;color:#5a7a68;line-height:1.6">Complete diet & workout plan — Indian foods, realistic schedule, instant results.</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- CTA BANNER -->
+  <section id="cta" class="py-24 relative overflow-hidden" style="background:#0F1620">
+    <div class="max-w-4xl mx-auto px-6 reveal">
+      <div class="relative rounded-3xl overflow-hidden" style="background:linear-gradient(135deg,rgba(26,122,74,.16),rgba(15,22,32,.96) 60%,rgba(26,122,74,.1));border:1px solid rgba(26,122,74,.3);padding:clamp(2.5rem,6vw,5rem) clamp(1.5rem,4vw,3rem)">
+        <div class="orb" style="width:280px;height:280px;background:#1A7A4A;opacity:.2;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
+        <div class="relative z-10 text-center">
+          <div class="chip" style="display:inline-flex;margin-bottom:2rem">
+            <span class="w-1.5 h-1.5 rounded-full dot-pulse flex-shrink-0" style="background:#2ECC7A"></span>
+            START TODAY
+          </div>
+          <h2 class="font-bold text-white leading-none" style="font-family:'Rajdhani',sans-serif;font-size:clamp(2rem,5vw,3.5rem);margin-bottom:1.25rem">
+            Apna Fitness Journey<br/>
+            <span style="color:#2ECC7A">Aaj Hi Shuru Karo</span>
+          </h2>
+          <p style="color:#5a7a68;max-width:400px;margin:0 auto 2.5rem;line-height:1.7">
+            No gym membership. No complicated diets. Just science, AI, and food that feels like home.
+          </p>
+          <a href="calculator.html" class="btn-glow inline-flex items-center gap-4 text-white px-10 py-5 rounded-2xl text-sm" style="font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.14em;text-transform:uppercase">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Get My Free Plan
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- FOOTER -->
+  <footer class="footer-top py-10">
+    <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-5">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#1A7A4A">
+          <span style="font-family:'Rajdhani',sans-serif;font-weight:700;color:white;font-size:.9rem">G</span>
+        </div>
+        <span style="font-family:'Rajdhani',sans-serif;font-weight:600;color:white">
+          GetFitHub<span style="color:#2ECC7A">.AI</span>
+        </span>
+      </div>
+      <p style="font-size:.82rem;color:#3d5a4a">Built with ❤️ for India's fitness revolution · 2025</p>
+      <div class="flex gap-6" style="font-size:.82rem;color:#3d5a4a">
+        <a href="#" onmouseover="this.style.color='#2ECC7A'" onmouseout="this.style.color='#3d5a4a'" style="transition:color .2s">Privacy</a>
+        <a href="#" onmouseover="this.style.color='#2ECC7A'" onmouseout="this.style.color='#3d5a4a'" style="transition:color .2s">Terms</a>
+        <a href="#" onmouseover="this.style.color='#2ECC7A'" onmouseout="this.style.color='#3d5a4a'" style="transition:color .2s">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+
+  <script>
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => io.observe(el));
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const t = document.querySelector(a.getAttribute('href'));
+        if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+      });
+    });
+
+    // Navbar highlight on scroll
+    const nav = document.querySelector('nav');
+    window.addEventListener('scroll', () => {
+      nav.style.borderBottomColor = window.scrollY > 40 ? 'rgba(26,122,74,.28)' : 'rgba(26,122,74,.12)';
+    });
+  </script>
+
+</body>
+</html>
